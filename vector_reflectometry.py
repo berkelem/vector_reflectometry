@@ -8,9 +8,7 @@ Created on Thu Feb 16 15:39:15 2017
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as const
-import math
 import os
-import sys
 
 class Datafile():
 
@@ -355,11 +353,10 @@ if __name__ == '__main__':
     model_file = '3mm_ind.txt'
     thru_file = './030317/thru.s2p'
     m = Measurement(thru_file, model_file)
-    print m.bias
     
-    path = './030317/'#'./022117/filtran/'#'./rotate_grid3/'#'./022117/'
+    path = './030317/'
     args = ['th0', 'th5', 'th10', 'th15']
-    distances = [dist*0.0254 for dist in [0.0, 0.025, 0.045, 0.075, 0.090, 0.135]]#[0.0, 0.025, 0.047]]#[0.0, 0.033, 0.066, 0.098]]
+    distances = [dist*0.0254 for dist in [0.0, 0.025, 0.045, 0.075, 0.090, 0.135]]
     
     for arg in args:
         #m.plot_reflectance(path, arg, distances, saveas=path+'plots/FSS_refl_'+arg+'.png')
@@ -369,63 +366,3 @@ if __name__ == '__main__':
     thru.f = np.array([x*10**-9 for x in thru.f])
     trans = -20*np.log10(np.sqrt(thru.s21r**2 + thru.s21i**2))
     trans_ceil = ceil_data(trans, factor=4)
-    print thru.f[(thru.f >= 75.)&(thru.f <= 115.1)]
-    print thru.f
-    print trans[(thru.f >= 75)&(thru.f <= 115)]
-    print trans
-'''
-l1, l2 = plt.plot(thru.f[(thru.f >= 75.)&(thru.f <= 115.1)], trans[(thru.f >= 75.)&(thru.f <= 115.1)], 'r', thru.f[(thru.f >= 75.)&(thru.f <= 115.1)], trans_ceil[(thru.f >= 75.)&(thru.f <= 115.1)], 'b')
-#l1, l2 = plt.plot(thru.f, trans, 'r', thru.f, trans_ceil, 'b')
-plt.legend((l1,l2), ('Measured "thru"', 'Bias'))
-plt.title('Calculation of bias')
-plt.xlabel('Frequency (GHz)')
-plt.ylabel('Power (dB)')
-plt.show()
-
-plt.savefig(path+'bias.png')
-plt.close()
-'''
-
-'''        
-R_inst_lin = np.array([10.0**(R_inst[i]/20.0) for i in xrange(len(R_inst))])
-R_dut_lin = np.array([10.0**((R_dut[i]+bias)/20.0) for i in xrange(len(R_dut))])
-T_inst = 1.0 - R_inst_lin
-T_dut = 1.0 - R_dut_lin
-T_dut = smooth_data(T_dut, 5)
-
-filename = sys.argv[1]
-
-with open(filename, 'r') as g:
-    data = np.loadtxt(g,dtype=float)#, delimiter=' ',unpack=True)
-    f = data[0::10]
-    zero_deg = data[1::10]
-    five_deg = data[2::10]
-    ten_deg = data[3::10]
-    fift_deg = data[4::10]
-    twen_deg = data[5::10]
-    twenfiv_deg = data[6::10]
-    thir_deg = data[7::10]
-    thirfiv_deg = data[8::10]
-    fort_deg = data[9::10]
-'''
-'''    
-l1,l2,l3,l4,l5,l6 = plt.plot(
-    f,zero_deg,'g',f,five_deg,'c',f,ten_deg,'m',f,twen_deg,'k',freq*10**-9, T_inst, 'r', freq*10**-9, T_dut, 'b')
-plt.xlabel('Frequency (GHz)')
-plt.ylabel('Transmittance')
-plt.xlim([60,120])
-plt.ylim([0,1.0])
-plt.legend((l1,l2,l3,l4,l5,l6), ('Model 0 deg','Model 5 deg','Model 10 deg','Model 20 deg','Inst', 'DUT (smoothed)'), loc='lower right')
-plt.savefig('FSS_trans.png')
-
-T_inst, T_dut, freq = calc_reflectance(
-    file_list, np.array([0. - dist for dist in distances]), port='S21')
-l1,l2,l3 = plt.plot(
-    f,zero_deg,'g',freq*10**-9, T_inst, 'r', freq*10**-9, T_dut, 'b')
-plt.xlabel('Frequency (GHz)')
-plt.ylabel('Transmittance')
-plt.xlim([60,120])
-plt.ylim([0,1.0])
-plt.legend((l1,l2,l3), ('Model','Inst', 'DUT (smoothed)'), loc='lower right')
-plt.savefig('FSS_trans1.png')
-'''
