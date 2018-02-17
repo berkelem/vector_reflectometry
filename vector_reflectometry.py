@@ -187,7 +187,7 @@ class Measurement():
         return np.array(resp_inst), np.array(resp_dut), freq
 
     def plot_reflectance(self, path, arg, distances, port='S11', scale='log', 
-                         saveas='FSS_refl.png'):
+                         saveas='FSS_refl.png', band='Gband'):
         '''Plot reflectance.
         
         Parameters
@@ -208,6 +208,10 @@ class Measurement():
         saveas : str, optional
             Desired output filename. Default is 'FSS_refl.png'.
         '''
+        
+        freq_dict = {'Wband':[75,115], 'Gband':[140,220]}
+        freq_range = freq_dict[band]
+        
         file_list = make_filelist(path, arg)
         R_inst, R_dut, freq = self.calc_response(
                             file_list, np.array([0. - dist for dist in 
@@ -229,13 +233,13 @@ class Measurement():
         if scale == 'linear':
             plt.ylabel('Reflectance')
         plt.legend((l1,l2), ('Inst', 'DUT'))
-        plt.xlim([60,120])
+        plt.xlim([freq_range[0]-10,freq_range[1]+10])
         plt.title(arg)
         plt.savefig(saveas)
         plt.close()
         return
     
-    def plot_transmittance(self, path, arg, distances, port='S21', scale='linear', saveas='FSS_trans.png'):
+    def plot_transmittance(self, path, arg, distances, port='S21', scale='linear', saveas='FSS_trans.png', band='Gband'):
         '''Plot transmittance.
         
         Parameters
@@ -256,6 +260,8 @@ class Measurement():
         saveas : str, optional
             Desired output filename. Default is 'FSS_trans.png'.
         '''
+        freq_dict = {'Wband':[75,115], 'Gband':[140,220]}
+        freq_range = freq_dict[band]
         
         file_list = make_filelist(path, arg)
         T_inst, T_dut, freq = self.calc_response(
@@ -268,7 +274,7 @@ class Measurement():
         if self.model:
             with open(model_file, 'r') as f1:
                 f, deg0, deg5, deg10, deg15, deg20, deg25, deg30, deg35, deg40 = np.genfromtxt(f1, dtype=None, skip_header=1, usecols=range(10),  unpack=True)
-            if arg == 'th0':
+            if arg == 'th0' or arg == 'Th0':
                 model = deg0
             elif arg == 'th5':
                 model = deg5
@@ -280,20 +286,20 @@ class Measurement():
                 model = deg20
             elif arg == 'th25':
                 model = deg25
-            elif arg == 'th30':
+            elif arg == 'th30' or arg == 'Th30':
                 model = deg30
             elif arg == 'th35':
                 model = deg35
-            elif arg == 'th40':
+            elif arg == 'th40' or arg == 'Th40':
                 model = deg40
             else:
                 raise ValueError('Argument does not match model options.')
             if scale == 'log':
                 model = 20*np.log10(model)
                 T_dut_corr = T_dut + self.bias
-                l1,l2,l3 = plt.plot(freq[(freq>=75.)&(freq<=115.)], T_inst[(freq>=75.)&(freq<=115.)], 'r', freq[(freq>=75.)&(freq<=115.)], T_dut_corr[(freq>=75.)&(freq<=115.)], 'b', f, model, 'g')
+                l1,l2,l3 = plt.plot(freq[(freq>=freq_range[0])&(freq<=freq_range[1])], T_inst[(freq>=freq_range[0])&(freq<=freq_range[1])], 'r', freq[(freq>=freq_range[0])&(freq<=freq_range[1])], T_dut_corr[(freq>=freq_range[0])&(freq<=freq_range[1])], 'b', f, model, 'g')
             elif scale == 'linear':            
-                l1,l2,l3 = plt.plot(freq[(freq>=75.)&(freq<=115.)], T_inst[(freq>=75.)&(freq<=115.)], 'r', freq[(freq>=75.)&(freq<=115.)], ceil_data(T_dut, factor=3)[(freq>=75.)&(freq<=115.)], 'b', f, model, 'g')
+                l1,l2,l3 = plt.plot(freq[(freq>=freq_range[0])&(freq<=freq_range[1])], T_inst[(freq>=freq_range[0])&(freq<=freq_range[1])], 'r', freq[(freq>=freq_range[0])&(freq<=freq_range[1])], ceil_data(T_dut, factor=3)[(freq>=freq_range[0])&(freq<=freq_range[1])], 'b', f, model, 'g')
             else:
                 raise ValueError('Pick a scale: either "linear" or "log".')
             plt.legend((l1,l2,l3), ('Inst', 'DUT','Model'), loc='lower left')
@@ -310,12 +316,12 @@ class Measurement():
         if scale == 'linear':
             plt.ylabel('Transmittance')
             #plt.ylim([0,1.0])
-        plt.xlim([60,120])
+        plt.xlim([freq_range[0]-10,freq_range[1]+10])
         plt.title(arg)
         plt.savefig(saveas)
         plt.close()
         data_to_write = np.array([freq, T_inst, T_dut, self.bias])
-        with open(path+'plots21/FSS_trans_'+str(arg)+'.dat', 'w') as f:
+        with open(path+'plots/FSS_trans_'+str(arg)+'.dat', 'w') as f:
             f.write('Frequency(GHz) T_inst T_dut Bias \n')
             np.savetxt(f, data_to_write.T, fmt = '%f')
         return
@@ -351,18 +357,13 @@ def make_filelist(path, arg):
 
 if __name__ == '__main__':
     model_file = '3mm_ind.txt'
-    thru_file = './030317/thru.s2p'
+    thru_file = './020718/thru_0.s2p'
     m = Measurement(thru_file, model_file)
     
-    path = './030317/'
-    args = ['th0', 'th5', 'th10', 'th15']
-    distances = [dist*0.0254 for dist in [0.0, 0.025, 0.045, 0.075, 0.090, 0.135]]
+    path = './020718/'
+    args = ['Th0', 'Th30','Th40']
+    distances = [0.0254*d for d in [-0.0130, -0.0066, 0., 0.0066, 0.0130]]
     
     for arg in args:
-        #m.plot_reflectance(path, arg, distances, saveas=path+'plots/FSS_refl_'+arg+'.png')
-        m.plot_transmittance(path, arg, [-x for x in distances], saveas=path+'plots21/FSS_trans_'+arg+'.png', port='S21')
-        
-    thru = Datafile(thru_file)
-    thru.f = np.array([x*10**-9 for x in thru.f])
-    trans = -20*np.log10(np.sqrt(thru.s21r**2 + thru.s21i**2))
-    trans_ceil = ceil_data(trans, factor=4)
+        m.plot_reflectance(path, arg, distances, saveas=path+'plots/FSS_refl_'+arg+'.png', band='Gband')
+        m.plot_transmittance(path, arg, [-x for x in distances], saveas=path+'plots/FSS_trans_'+arg+'.png', port='S21', band='Gband')
