@@ -276,19 +276,19 @@ class Measurement():
                 f, deg0, deg5, deg10, deg15, deg20, deg25, deg30, deg35, deg40 = np.genfromtxt(f1, dtype=None, skip_header=1, usecols=range(10),  unpack=True)
             if arg == 'th0' or arg == 'Th0':
                 model = deg0
-            elif arg == 'th5':
+            elif arg == 'th5' or arg == 'Th5':
                 model = deg5
-            elif arg == 'th10':
+            elif arg == 'th10' or arg == 'Th10':
                 model = deg10
-            elif arg == 'th15':
+            elif arg == 'th15' or arg == 'Th15':
                 model = deg15
-            elif arg == 'th20':
+            elif arg == 'th20' or arg == 'Th20':
                 model = deg20
-            elif arg == 'th25':
+            elif arg == 'th25' or arg == 'Th25':
                 model = deg25
             elif arg == 'th30' or arg == 'Th30':
                 model = deg30
-            elif arg == 'th35':
+            elif arg == 'th35' or arg == 'Th35':
                 model = deg35
             elif arg == 'th40' or arg == 'Th40':
                 model = deg40
@@ -305,9 +305,9 @@ class Measurement():
             plt.legend((l1,l2,l3), ('Inst', 'DUT','Model'), loc='lower left')
         else:
             if scale == 'log':
-                l1,l2 = plt.plot(freq, T_inst, 'r', freq*10**-9, T_dut + self.bias, 'b')
+                l1,l2 = plt.plot(freq*10**-9, T_inst, 'r', freq*10**-9, T_dut + self.bias, 'b')
             elif scale == 'linear':
-                l1,l2 = plt.plot(freq, T_inst, 'r', freq*10**-9, T_dut, 'b')
+                l1,l2 = plt.plot(freq*10**-9, T_inst, 'r', freq*10**-9, T_dut, 'b')
             else:
                 raise ValueError('Pick a scale: either "linear" or "log".')
             plt.legend((l1,l2), ('Inst', 'DUT'))
@@ -357,7 +357,7 @@ def make_filelist(path, arg):
 
 if __name__ == '__main__':
     model_file = '3mm_ind.txt'
-    thru_file = './020718/thru_0.s2p'
+    thru_file = '../../Network\ Analyzer\ Projects/Mesh\ filter\ experiment/020718/thru_0.s2p'
     m = Measurement(thru_file, model_file)
     
     path = './020718/'
@@ -365,5 +365,5 @@ if __name__ == '__main__':
     distances = [0.0254*d for d in [-0.0130, -0.0066, 0., 0.0066, 0.0130]]
     
     for arg in args:
-        m.plot_reflectance(path, arg, distances, saveas=path+'plots/FSS_refl_'+arg+'.png', band='Gband')
+        m.plot_reflectance(path, arg, distances, saveas=path+'plots/FSS_refl_'+arg+'.png', band='Wband')
         m.plot_transmittance(path, arg, [-x for x in distances], saveas=path+'plots/FSS_trans_'+arg+'.png', port='S21', band='Gband')
